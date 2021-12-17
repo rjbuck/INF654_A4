@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cats</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<h1>Cats</h1>
+    <div class="content">
+        <form id="submit-cat">
+            <input type="text" name="name" placeholder="Cat name">
+            <input type="text" name="cats" placeholder="Cat type">
+            <button>Add Cat</button>
+        </form>
+        <ul id="list-of-cats"></ul>
+    </div>
+<script type="module">
+// Import the functions you need from the SDKs you need
+import {initializeApp} from "https://www.gstatic.com/firebasejs/9.2.0/firebase-app.js";
+//import { getAnalytics } from "firebase/analytics";
+import {getFirestore, collection, getDocs, addDoc, doc, deleteDoc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/9.2.0/firebase-firestore.js";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC8sJPkBnxijFp4LkhgZeBKMN9DQhI3I_g",
+  authDomain: "assignment4-e726b.firebaseapp.com",
+  projectId: "assignment4-e726b",
+  storageBucket: "assignment4-e726b.appspot.com",
+  messagingSenderId: "462959436422",
+  appId: "1:462959436422:web:50e82c1dcf6f1fb8f32707",
+  measurementId: "G-FWCCBXCR9X"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+//const analytics = getAnalytics(app); 
+
+async function getStuff(db) {
+	const theCollection = collection(db, "cats");
+	const theStuff = await getDocs(theCollection);
+	const theList = theStuff.docs.map((doc) => doc.data());
+	return theList;
+}
+const theList = document.querySelector("#list-of-cats");
+const form = document.querySelector("#submit-cat");
+
+function theCats(dc) {
+    let li = document.createElement("li");
+    let name = document.createElement("span");
+    let prettyCats = document.createElement("span");
+    let cat = document.createElement('div');
+
+    li.setAttribute('data-id', dc.id);
+    name.textContent = dc.data().name;
+    prettyCats.textContent = dc.data().prettyCats;
+    cat.textContent = 'x';
+
+    li.appendChild(name);
+    li.appendChild(prettyCats);
+    li.appendChild(cat);
+
+    theList.appendChild(li);
+
+    cat.addEventListener('click', (e) => {
+    e.stopPropagation();
+    let id = e.target.parentElement.getAttribute('data-id');
+    deleteDoc(doc(db, "cats", id))
+        })
+    }
+
+    const allTheCats = getDocs(collection(db, "cats")).then((snapshot) => {
+        snapshot.forEach((doc) => {
+            theCats(doc)
+        })
+    })
+
+    const q = query(collection(db, "cats"), where("cats", "==", "shorthair"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, "=>", doc.data())
+    })
+
+    const upDoc = doc(db, "cats", "V6praPZuYT2A65W9ebSN");
+
+    updateDoc(upDoc, {
+        name: "Shorthair Cat"
+    })
+
+    form.addEventListener(('submit'), (e) => {
+        e.preventDefault();
+        const docRef = addDoc(collection(db, "cats"), {
+            cats: form.cats.value,
+            name: form.name.value
+        })
+    })
+
+</script>
+</body>
+</html>
